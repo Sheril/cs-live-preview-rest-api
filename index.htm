@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <script>
+      // Add your Stack Details
+      const API_KEY = "bltddf398da11023b64";
+      const DELIVERY_TOKEN = "";
+      const ENVIRONMENT = "";
+      const CONTENT_TYPE_UID = "";
+      const ENTRY_UID = "";
+  
+      // Base URLs
+      const PREVIEW_BASEURL = "https://api.contentstack.io/v3";
+      const DELIVERY_BASEURL = "https://cdn.contentstack.io/v3";
+      
+  
+      // Get Data by Entry id
+      async function getEntryById(contentTypeId, entryId) {
+        const url = `${DELIVERY_BASEURL}/content_types/${contentTypeId}/entries/${entryId}?environment=${ENVIRONMENT}`;
+  
+        try {
+          const rawResponse = await fetch(url, {
+            headers: {
+              api_key: API_KEY,
+              access_token: DELIVERY_TOKEN,
+            },
+          });
+  
+          return await rawResponse.json() ?? {};
+        } catch (e) {
+          console.error('Unable to fetch the data', e);
+        }
+      }
+  
+      // Get Preview Data by Entry id
+      async function getPreviewEntryById(contentTypeId, entryId, hash) {
+        const url = `${PREVIEW_BASEURL}/content_types/${contentTypeId}/entries/${entryId}?live_preview=${hash}`;
+  
+        try {
+          const rawResponse = await fetch(url, {
+            headers: {
+              api_key: API_KEY,
+              access_token: DELIVERY_TOKEN,
+            },
+          });
+  
+          return await rawResponse.json() ?? {};
+        } catch (e) {
+          console.error('Unable to fetch the data', e);
+        }
+      }
+  
+      // Render UI
+      async function renderContent(data) {
+        document.getElementById("headline").innerHTML = data?.entry?.headline ?? '';
+        document.getElementById("description").innerHTML = data?.entry?.description ?? '';
+      }
+  
+      function livePreview() {
+        const messageToContentstack = {
+          from: "live-preview",
+          type: "init",
+          data: {
+            config: {
+              href: window.location.href,
+            },
+          },
+        };
+  
+        // Initializing live preview
+        window.parent.postMessage(messageToContentstack, "*");
+  
+        // Listening for message from Contentstack
+        window.addEventListener("message", async (e) => {
+          const { data, from, type } = e.data;
+  
+          const isPreviewAvailable = data?.hash && from === "live-preview" && type === "client-data-send"
+  
+          if (isPreviewAvailable) {
+            const { hash } = data;
+            const previewData = await getPreviewEntryById(CONTENT_TYPE_UID, ENTRY_UID, hash)
+            renderContent(previewData);
+          }
+        });
+      }
+  
+      async function init() {
+        const initial = await getEntryById(CONTENT_TYPE_UID, ENTRY_UID);
+        renderContent(initial);
+        livePreview();
+      }
+  
+      init();
+    </script>
+  </head>
+  <body>
+    <h1 id="headline"></h1>
+    <p id="description"></p>
+  </body>
+</html>
