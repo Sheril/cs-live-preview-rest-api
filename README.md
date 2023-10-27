@@ -10,7 +10,7 @@ This code primarily focuses on how to setup Live Preview using REST API.
 
 ## Prerequisites
 
-1. [Install `http-server`](https://www.npmjs.com/package/http-server) as the Live Preview only runs on a secure server.
+1. Install [`http-server`](https://www.npmjs.com/package/http-server) as the Live Preview only runs on a secure server.
 ```bash
 `npm install --global http-server`
 ```
